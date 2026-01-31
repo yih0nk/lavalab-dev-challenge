@@ -69,7 +69,7 @@ export default function CheckoutPage() {
             const supabase = getClient();
 
             // Create the order
-            const { data: order, error: orderError } = await supabase
+            const { data: orderData, error: orderError } = await supabase
                 .from("orders")
                 .insert({
                     user_id: user.id,
@@ -85,12 +85,14 @@ export default function CheckoutPage() {
 
             if (orderError) throw orderError;
 
+            const order = orderData as { id: string };
+
             // Create order items and update stock
             for (const item of items) {
                 // Convert product ID to UUID format if needed
                 const productId = item.product.id.includes("-")
                     ? item.product.id
-                    : `00000000-0000-0000-0000-00000000000${item.product.id}`;
+                    : `00000000-0000-0000-0000-${item.product.id.padStart(12, "0")}`;
 
                 // Create order item
                 const { error: itemError } = await supabase
@@ -117,11 +119,11 @@ export default function CheckoutPage() {
 
                 // Update stock (decrement by quantity purchased)
                 const { error: stockError } = await supabase.rpc(
-                    "decrement_stock",
+                    "decrement_stock" as never,
                     {
                         p_product_id: productId,
                         p_quantity: item.quantity,
-                    }
+                    } as never
                 );
 
                 if (stockError) {

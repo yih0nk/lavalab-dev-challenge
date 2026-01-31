@@ -36,7 +36,7 @@ export function useReviewCount(productId: string): UseReviewCountResult {
                     return;
                 }
 
-                const reviews = data || [];
+                const reviews = (data || []) as Array<{ rating: number }>;
                 setCount(reviews.length);
 
                 if (reviews.length > 0) {
