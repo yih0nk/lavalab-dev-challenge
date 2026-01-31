@@ -33,7 +33,7 @@ interface CartStore {
     items: CartItem[];
     isCartOpen: boolean;
     isSyncing: boolean;
-    addToCart: (product: Product, color: string, size?: number) => void;
+    addToCart: (product: Product, color: string, size?: number, quantity?: number) => void;
     removeFromCart: (productId: string, color: string) => void;
     updateQuantity: (productId: string, color: string, quantity: number) => void;
     clearCart: () => void;
@@ -71,10 +71,14 @@ export const useCartStore = create<CartStore>()(
             isCartOpen: false,
             isSyncing: false,
 
-            addToCart: (product, color, size) => {
+            addToCart: (product, color, size, quantity = 1) => {
+                // Guard: quantity must be at least 1
+                const qtyToAdd = Math.max(1, quantity);
+
                 // Update local state IMMEDIATELY (synchronous)
                 const currentItems = get().items;
                 const normalizedProductId = normalizeProductId(product.id);
+
                 const existingItem = currentItems.find(
                     (item) =>
                         normalizeProductId(item.product.id) === normalizedProductId &&
@@ -82,14 +86,21 @@ export const useCartStore = create<CartStore>()(
                         item.selectedSize === size
                 );
 
-                let newQuantity = 1;
+                let newQuantity = qtyToAdd;
+                
+                if ((product.sizes?.length ?? 0) > 0 && (size == null)) {
+                    toast.error("Please select a size");
+                    return;
+                }
+
                 if (existingItem) {
-                    newQuantity = existingItem.quantity + 1;
+                    newQuantity = existingItem.quantity + qtyToAdd;
+
                     set({
                         items: currentItems.map((item) =>
                             normalizeProductId(item.product.id) === normalizedProductId &&
-                            item.selectedColor === color &&
-                            item.selectedSize === size
+                                item.selectedColor === color &&
+                                item.selectedSize === size
                                 ? { ...item, quantity: newQuantity }
                                 : item
                         ),
@@ -99,20 +110,21 @@ export const useCartStore = create<CartStore>()(
                     set({
                         items: [
                             ...currentItems,
-                            { product, quantity: 1, selectedColor: color, selectedSize: size },
+                            { product, quantity: qtyToAdd, selectedColor: color, selectedSize: size },
                         ],
                         isCartOpen: true,
                     });
                 }
 
-                // Show toast immediately
                 toast.success("Added to cart");
 
                 // Sync to server in background (non-blocking)
                 (async () => {
                     try {
                         const supabase = getClient();
-                        const { data: { user } } = await supabase.auth.getUser();
+                        const {
+                            data: { user },
+                        } = await supabase.auth.getUser();
 
                         if (user) {
                             await supabase.from("cart_items").upsert(
@@ -131,6 +143,7 @@ export const useCartStore = create<CartStore>()(
                     }
                 })();
             },
+
 
             removeFromCart: (productId, color) => {
                 // Update local state IMMEDIATELY

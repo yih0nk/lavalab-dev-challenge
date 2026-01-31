@@ -141,6 +141,49 @@ export default function CheckoutPage() {
             setOrderId(order.id);
             setOrderComplete(true);
             toast.success("Order placed successfully!");
+
+            // Send confirmation email
+            try {
+                const emailResponse = await fetch("/api/send-order-email", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        customerEmail: user.email,
+                        customerName: shippingAddress.fullName || user.user_metadata?.full_name || "Valued Customer",
+                        orderNumber: order.id.slice(0, 8).toUpperCase(),
+                        orderDate: new Date().toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                        }),
+                        items: items.map((item) => ({
+                            name: item.product.name,
+                            quantity: item.quantity,
+                            price: item.product.price,
+                            color: item.selectedColor,
+                            size: item.selectedSize,
+                        })),
+                        subtotal,
+                        tax,
+                        shipping,
+                        total,
+                        shippingAddress: {
+                            street: shippingAddress.address || "Not provided",
+                            city: shippingAddress.city || "Not provided",
+                            state: shippingAddress.state || "",
+                            zipCode: shippingAddress.zipCode || "",
+                            country: shippingAddress.country || "USA",
+                        },
+                    }),
+                });
+
+                if (emailResponse.ok) {
+                    toast.success("Confirmation email sent!");
+                }
+            } catch (emailError) {
+                console.error("Failed to send confirmation email:", emailError);
+                // Don't show error toast - order was still successful
+            }
         } catch (error) {
             console.error("Checkout error:", error);
             toast.error("Failed to place order. Please try again.");

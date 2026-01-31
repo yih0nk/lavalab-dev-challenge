@@ -26,6 +26,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Star, Minus, Plus, ChevronDown } from "lucide-react";
 import { getProductById } from "@/data/products";
 import { useCartStore } from "@/store/cartStore";
+import { useRealtimeStock } from "@/hooks/useRealtimeStock";
+
 
 export default function ProductDetailPage() {
     const params = useParams();
@@ -60,6 +62,15 @@ export default function ProductDetailPage() {
             </div>
         );
     }
+    // Real-time stock
+    const { getStock, isLowStock, isOutOfStock } = useRealtimeStock({
+        productIds: [product.id],
+    });
+
+    const stock = getStock(product.id);
+    const lowStock = isLowStock(product.id);
+    const outOfStock = isOutOfStock(product.id);
+
 
     // Get images array (use main image if no gallery)
     const images = product.images || [product.image];
@@ -71,16 +82,7 @@ export default function ProductDetailPage() {
             alert("Please select a size");
             return;
         }
-        addToCart(product, selectedColor, selectedSize);
-    };
-
-    const handleBuyNow = () => {
-        if (!selectedSize) {
-            alert("Please select a size");
-            return;
-        }
-        addToCart(product, selectedColor, selectedSize);
-        router.push("/checkout");
+        addToCart(product, selectedColor, selectedSize, quantity);
     };
 
     const incrementQuantity = () => setQuantity((q) => q + 1);
@@ -96,13 +98,12 @@ export default function ProductDetailPage() {
             <Star
                 key={i}
                 size={16}
-                className={`${
-                    i < Math.floor(rating)
-                        ? "fill-amber-400 text-amber-400"
-                        : i < rating
+                className={`${i < Math.floor(rating)
+                    ? "fill-amber-400 text-amber-400"
+                    : i < rating
                         ? "fill-amber-400/50 text-amber-400"
                         : "text-neutral-300"
-                }`}
+                    }`}
             />
         ));
     };
@@ -140,11 +141,10 @@ export default function ProductDetailPage() {
                                     <button
                                         key={index}
                                         onClick={() => setSelectedImage(index)}
-                                        className={`w-20 h-20 bg-surface-muted overflow-hidden transition-all cursor-pointer ${
-                                            selectedImage === index
-                                                ? "ring-2 ring-primary"
-                                                : "hover:ring-1 hover:ring-neutral-300"
-                                        }`}
+                                        className={`w-20 h-20 bg-surface-muted overflow-hidden transition-all cursor-pointer ${selectedImage === index
+                                            ? "ring-2 ring-primary"
+                                            : "hover:ring-1 hover:ring-neutral-300"
+                                            }`}
                                     >
                                         <Image
                                             src={img}
@@ -186,6 +186,20 @@ export default function ProductDetailPage() {
                             )}
                         </div>
 
+                        {/* Stock */}
+                        <div className="text-sm">
+                            {stock === null ? (
+                                <span className="text-neutral-500">Stock: —</span>
+                            ) : outOfStock ? (
+                                <span className="font-medium text-neutral-800">Out of stock</span>
+                            ) : lowStock ? (
+                                <span className="font-medium text-amber-600">Only {stock} left!</span>
+                            ) : (
+                                <span className="text-neutral-600">{stock} in stock</span>
+                            )}
+                        </div>
+
+
                         {/* Description */}
                         {product.description && (
                             <p className="text-neutral-600 leading-relaxed">
@@ -203,11 +217,10 @@ export default function ProductDetailPage() {
                                     <button
                                         key={color}
                                         onClick={() => setSelectedColor(color)}
-                                        className={`w-8 h-8 rounded-full transition-all cursor-pointer ${
-                                            selectedColor === color
-                                                ? "ring-2 ring-offset-2 ring-primary"
-                                                : "hover:scale-110"
-                                        }`}
+                                        className={`w-8 h-8 rounded-full transition-all cursor-pointer ${selectedColor === color
+                                            ? "ring-2 ring-offset-2 ring-primary"
+                                            : "hover:scale-110"
+                                            }`}
                                         style={{ backgroundColor: color }}
                                         aria-label={`Select color ${color}`}
                                     />
@@ -225,11 +238,10 @@ export default function ProductDetailPage() {
                                     <button
                                         key={size}
                                         onClick={() => setSelectedSize(size)}
-                                        className={`w-12 h-12 flex items-center justify-center text-sm font-medium transition-all duration-200 cursor-pointer ${
-                                            selectedSize === size
-                                                ? "bg-[#181818] text-white"
-                                                : "bg-transparent text-[#181818] hover:bg-neutral-100"
-                                        }`}
+                                        className={`w-12 h-12 flex items-center justify-center text-sm font-medium transition-all duration-200 cursor-pointer ${selectedSize === size
+                                            ? "bg-[#181818] text-white"
+                                            : "bg-transparent text-[#181818] hover:bg-neutral-100"
+                                            }`}
                                     >
                                         {size}
                                     </button>
@@ -266,16 +278,11 @@ export default function ProductDetailPage() {
                         {/* Action Buttons */}
                         <div className="flex flex-col sm:flex-row gap-3 pt-4">
                             <button
+                                disabled={outOfStock}
+                                className={`flex-1 py-4 px-8 font-semibold uppercase tracking-wider transition-colors bg-black text-white border-black border-[2] hover:text-black hover:bg-white ${outOfStock ? "bg-neutral-300 text-white cursor-not-allowed" : "bg-primary text-white hover:bg-primary-light"}`}
                                 onClick={handleAddToCart}
-                                className="flex-1 py-4 px-8 bg-black border-black border-[2] text-white font-semibold uppercase tracking-wider hover:bg-white hover:text-black transition-colors cursor-pointer"
                             >
-                                Add to Cart
-                            </button>
-                            <button
-                                onClick={handleBuyNow}
-                                className="flex-1 py-4 px-8 bg-black text-white font-semibold uppercase tracking-wider hover:bg-white hover:text-black border-black border-[2] transition-colors cursor-pointer"
-                            >
-                                Buy Now
+                                {outOfStock ? "Out of Stock" : "Add to Cart"}
                             </button>
                         </div>
 
@@ -290,9 +297,8 @@ export default function ProductDetailPage() {
                                     <span className="font-semibold text-primary">Product Details</span>
                                     <ChevronDown
                                         size={20}
-                                        className={`text-neutral-400 transition-transform ${
-                                            openSection === "details" ? "rotate-180" : ""
-                                        }`}
+                                        className={`text-neutral-400 transition-transform ${openSection === "details" ? "rotate-180" : ""
+                                            }`}
                                     />
                                 </button>
                                 <AnimatePresence>
@@ -326,9 +332,8 @@ export default function ProductDetailPage() {
                                     <span className="font-semibold text-primary">Shipping & Returns</span>
                                     <ChevronDown
                                         size={20}
-                                        className={`text-neutral-400 transition-transform ${
-                                            openSection === "shipping" ? "rotate-180" : ""
-                                        }`}
+                                        className={`text-neutral-400 transition-transform ${openSection === "shipping" ? "rotate-180" : ""
+                                            }`}
                                     />
                                 </button>
                                 <AnimatePresence>
@@ -362,9 +367,8 @@ export default function ProductDetailPage() {
                                     </span>
                                     <ChevronDown
                                         size={20}
-                                        className={`text-neutral-400 transition-transform ${
-                                            openSection === "reviews" ? "rotate-180" : ""
-                                        }`}
+                                        className={`text-neutral-400 transition-transform ${openSection === "reviews" ? "rotate-180" : ""
+                                            }`}
                                     />
                                 </button>
                                 <AnimatePresence>

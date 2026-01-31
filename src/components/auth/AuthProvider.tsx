@@ -7,27 +7,37 @@ import { useWishlistStore } from "@/store/wishlistStore";
 import AuthModal from "./AuthModal";
 
 interface AuthProviderProps {
-  children: ReactNode;
+    children: ReactNode;
 }
 
 export default function AuthProvider({ children }: AuthProviderProps) {
-  // Initialize auth state
-  const { user, isLoading } = useAuth();
-  const syncCart = useCartStore((state) => state.syncWithServer);
-  const syncWishlist = useWishlistStore((state) => state.syncWithServer);
+    // Initialize auth state
+    const { user, isLoading } = useAuth();
+    const syncCart = useCartStore((state) => state.syncWithServer);
+    const syncWishlist = useWishlistStore((state) => state.syncWithServer);
+    const clearCart = useCartStore((s) => s.clearCart);
+    const clearWishlist = useWishlistStore((s) => s.clearWishlist);
 
-  // Sync cart and wishlist when user logs in
-  useEffect(() => {
-    if (user && !isLoading) {
-      syncCart(user.id);
-      syncWishlist(user.id);
-    }
-  }, [user, isLoading, syncCart, syncWishlist]);
+    // Clear cart and wishlist on logout
+    useEffect(() => {
+        if (!isLoading && !user) {
+            clearCart();
+            clearWishlist();
+        }
+    }, [user, isLoading, clearCart, clearWishlist]);
 
-  return (
-    <>
-      {children}
-      <AuthModal />
-    </>
-  );
+    // Sync cart and wishlist when user logs in
+    useEffect(() => {
+        if (user && !isLoading) {
+            syncCart(user.id);
+            syncWishlist(user.id);
+        }
+    }, [user, isLoading, syncCart, syncWishlist]);
+
+    return (
+        <>
+            {children}
+            <AuthModal />
+        </>
+    );
 }

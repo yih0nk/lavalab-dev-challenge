@@ -1,4 +1,5 @@
 "use client";
+import SelectSizeModal from "@/components/ui/SelectSizeModal";
 
 /*
  * PRODUCT CARD COMPONENT
@@ -48,6 +49,13 @@ export default function ProductCard({ product, showStockBadge = true }: ProductC
     const lowStock = isLowStock(product.id);
     const outOfStock = isOutOfStock(product.id);
 
+    const [sizeOpen, setSizeOpen] = useState(false);
+    const [selectedSize, setSelectedSize] = useState<number | undefined>(undefined);
+
+    const sizes = product.sizes ?? []; // your product has sizes? if not, set []
+    const requiresSize = sizes.length > 0;
+
+
     // Helper to normalize product ID for comparison
     const normalizeProductId = (id: string): string => {
         if (id.includes("-")) {
@@ -69,7 +77,14 @@ export default function ProductCard({ product, showStockBadge = true }: ProductC
     const handleAddToCart = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        addToCart(product, selectedColor);
+        // If this product needs a size, collect it first
+        if (requiresSize) {
+            setSizeOpen(true);
+            return;
+        }
+
+        // Otherwise add immediately (no size)
+        addToCart(product, selectedColor, undefined, 1);
     };
 
     const handleFavoriteToggle = async (e: React.MouseEvent) => {
@@ -93,14 +108,13 @@ export default function ProductCard({ product, showStockBadge = true }: ProductC
         return Array.from({ length: 5 }, (_, i) => (
             <Star
                 key={i}
-                size={12}
-                className={`${
-                    i < Math.floor(rating)
-                        ? "fill-amber-400 text-amber-400"
-                        : i < rating
+                size={20}
+                className={`${i < Math.floor(rating)
+                    ? "fill-amber-400 text-amber-400"
+                    : i < rating
                         ? "fill-amber-400/50 text-amber-400"
                         : "text-neutral-300"
-                }`}
+                    }`}
             />
         ));
     };
@@ -142,20 +156,18 @@ export default function ProductCard({ product, showStockBadge = true }: ProductC
                     {/* Favorite/Wishlist Heart - top right */}
                     <button
                         onClick={handleFavoriteToggle}
-                        className={`absolute top-3 right-3 z-10 p-1.5 cursor-pointer transition-all duration-200 rounded-full ${
-                            isFavorite
-                                ? "opacity-100 bg-red-50"
-                                : "opacity-60 hover:opacity-100 hover:bg-white/80"
-                        }`}
+                        className={`absolute top-3 right-3 z-10 p-1.5 cursor-pointer transition-all duration-200 rounded-full ${isFavorite
+                            ? "opacity-100 bg-red-50"
+                            : "opacity-60 hover:opacity-100 hover:bg-white/80"
+                            }`}
                         aria-label={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
                     >
                         <Heart
                             size={20}
-                            className={`transition-colors duration-200 ${
-                                isFavorite
-                                    ? "fill-red-500 text-red-500"
-                                    : "text-neutral-600"
-                            }`}
+                            className={`transition-colors duration-200 ${isFavorite
+                                ? "fill-red-500 text-red-500"
+                                : "text-neutral-600"
+                                }`}
                         />
                     </button>
 
@@ -174,37 +186,57 @@ export default function ProductCard({ product, showStockBadge = true }: ProductC
                     <AnimatePresence>
                         {isHovered && !outOfStock && (
                             <motion.div
-                                initial={{ opacity: 0, y: 5 }}
+                                initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 5 }}
-                                transition={{ duration: 0.15 }}
+                                exit={{ opacity: 0, y: 10 }}
+                                transition={{ duration: 0.2 }}
                                 className="absolute bottom-0 left-0 right-0"
                             >
                                 <button
-                                    onClick={handleAddToCart}
-                                    className="w-full bg-[#1A1A1A] hover:bg-[#2D2D2D] text-white py-3 text-sm font-medium tracking-wide transition-colors duration-200 cursor-pointer"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        if (requiresSize) setSizeOpen(true);
+                                        else addToCart(product, selectedColor, undefined, 1);
+                                    }}
+                                    className="w-full bg-black text-white py-3 font-space text-base font-medium leading-6 tracking-normal transition-colors duration-200 cursor-pointer"
                                 >
                                     Add To Cart
                                 </button>
                             </motion.div>
                         )}
                     </AnimatePresence>
+
+                    {/* Select Size Modal */}
+                    <SelectSizeModal
+                        open={sizeOpen}
+                        onClose={() => setSizeOpen(false)}
+                        sizes={sizes}
+                        selectedSize={selectedSize}
+                        onSelect={(s) => setSelectedSize(s)}
+                        onConfirm={() => {
+                            if (selectedSize == null) return;
+                            addToCart(product, selectedColor, selectedSize, 1);
+                            setSizeOpen(false);
+                        }}
+                    />
+
                 </div>
 
                 {/* Product Info */}
                 <div className="space-y-1">
                     {/* Product Name */}
-                    <h3 className="text-sm font-medium text-[#1A1A1A] leading-tight">
+                    <h3 className="font-space text-base font-medium leading-6 tracking-normal text-black">
                         {product.name}
                     </h3>
 
                     {/* Price */}
-                    <div className="flex items-center gap-2">
-                        <span className={`text-sm font-semibold ${product.originalPrice ? "text-[#E74C3C]" : "text-[#1A1A1A]"}`}>
+                    <div className="flex items-center gap-3">
+                        <span className={`font-space text-base font-medium leading-6 tracking-normal ${product.originalPrice ? "text-[#E74C3C]" : "text-black"}`}>
                             ${product.price}
                         </span>
                         {product.originalPrice && (
-                            <span className="text-sm text-neutral-400 line-through">
+                            <span className="font-space text-base font-medium leading-6 tracking-normal text-black/50 line-through">
                                 ${product.originalPrice}
                             </span>
                         )}
