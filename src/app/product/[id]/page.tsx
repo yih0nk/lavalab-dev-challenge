@@ -267,7 +267,7 @@ export default function ProductDetailPage() {
                         <div className="flex flex-col sm:flex-row gap-3 pt-4">
                             <button
                                 onClick={handleAddToCart}
-                                className="flex-1 py-4 px-8 bg-primary text-white font-semibold uppercase tracking-wider hover:bg-primary-light transition-colors cursor-pointer"
+                                className="flex-1 py-4 px-8 bg-black text-white font-semibold uppercase tracking-wider hover:bg-primary-light transition-colors cursor-pointer"
                             >
                                 Add to Cart
                             </button>
