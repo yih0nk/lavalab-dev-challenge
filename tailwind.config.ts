@@ -29,7 +29,8 @@ const config: Config = {
             },
             // Font families
             fontFamily: {
-                sans: ["var(--font-space-grotesk)", "sans-serif"],
+                // Body font (Cabinet Grotesk) is loaded via globals.css.
+                sans: ["var(--font-cabinet)", "sans-serif"],
                 display: ["var(--font-teko)", "sans-serif"],
             },
             // Container max-width from Figma (1512px)

@@ -31,26 +31,18 @@ export default function ProductGrid() {
         <section className="py-10 lg:py-16 bg-white">
             <div className="container-main">
                 {/* Tab Buttons - Pill shaped */}
-                <div className="flex items-center gap-3 mb-8 lg:mb-10">
-                    <button
-                        onClick={() => setActiveTab("new-arrivals")}
-                        className={`px-6 py-2.5 text-sm font-medium tracking-wide uppercase transition-all duration-200 cursor-pointer rounded-full ${
-                            activeTab === "new-arrivals"
-                                ? "bg-[#4A4C6C] text-white"
-                                : "bg-white text-[#4A4C6C] border border-[#4A4C6C] hover:bg-gray-50"
-                        }`}
-                    >
-                        New Arrivals
-                    </button>
+                <div className="flex items-center gap-[36px] mb-18 lg:mb-20">
                     <button
                         onClick={() => setActiveTab("trending")}
-                        className={`px-6 py-2.5 text-sm font-medium tracking-wide uppercase transition-all duration-200 cursor-pointer rounded-full ${
-                            activeTab === "trending"
-                                ? "bg-[#8B8B4B] text-white"
-                                : "bg-white text-[#8B8B4B] border border-[#8B8B4B] hover:bg-gray-50"
-                        }`}
+                        className="px-[33px] py-[16px] text-[20px] font-bold tracking-[0.05em] leading-none uppercase transition-all duration-200 cursor-pointer rounded-[100px] bg-[#77794E] text-white border-4 border-[#9FA16D] hover:bg-white hover:text-[#9FA16D]"
                     >
                         What&apos;s Trending
+                    </button>
+                    <button
+                        onClick={() => setActiveTab("new-arrivals")}
+                        className="px-[33px] py-[16px] text-[20px] font-bold tracking-[0.05em] leading-none uppercase transition-all duration-200 cursor-pointer rounded-[100px] bg-[#4A4C6C] text-white border-4 border-[#7C7EA1] hover:bg-white hover:text-[#7C7EA1]"
+                    >
+                        New Arrivals
                     </button>
                 </div>
 
@@ -62,7 +54,7 @@ export default function ProductGrid() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6"
+                        className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-10"
                     >
                         {filteredProducts.slice(0, 8).map((product, index) => (
                             <motion.div
@@ -76,6 +68,9 @@ export default function ProductGrid() {
                         ))}
                     </motion.div>
                 </AnimatePresence>
+
+                {/* Divider line */}
+                <div className="mt-36 lg:mt-40 border-t border-[#1A1A1A] opacity-33" />
             </div>
         </section>
     );

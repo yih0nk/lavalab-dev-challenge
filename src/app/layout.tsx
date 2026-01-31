@@ -4,6 +4,8 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CartDrawer from "@/components/cart/CartDrawer";
+import AuthProvider from "@/components/auth/AuthProvider";
+import { Toaster } from "sonner";
 
 /*
  * FONTS:
@@ -29,10 +31,13 @@ export default function RootLayout({
     return (
         <html lang="en" className={teko.variable}>
             <body>
-                <Header />
-                <main>{children}</main>
-                <Footer />
-                <CartDrawer />
+                <AuthProvider>
+                    <Header />
+                    <main>{children}</main>
+                    <Footer />
+                    <CartDrawer />
+                    <Toaster position="top-center" richColors />
+                </AuthProvider>
             </body>
         </html>
     );

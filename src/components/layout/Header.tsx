@@ -13,9 +13,20 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, ShoppingCart, User, Menu, X } from "lucide-react";
+import { Menu, X, LogOut, User, Package } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
+import { useAuth } from "@/hooks/useAuth";
+import { useAuthModal } from "@/hooks/useAuthModal";
+import { Space_Grotesk } from "next/font/google";
+import CartBadge from "./CartBadge";
+import WishlistBadge from "./WishlistBadge";
+
+const spaceGrotesk = Space_Grotesk({
+    subsets: ["latin"],
+    weight: ["700"],
+});
 
 // Navigation links - matches Figma design
 const navLinks = [
@@ -32,8 +43,20 @@ const PROMO_MESSAGE = "New here? Save 20% with code: YR24";
 
 export default function Header() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const { items, toggleCart } = useCartStore();
-    const itemCount = items.reduce((total, item) => total + item.quantity, 0);
+    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
+    const toggleCart = useCartStore((state) => state.toggleCart);
+    const { user, isLoading, signOut } = useAuth();
+    const { showLogin } = useAuthModal();
+
+    const handleAccountClick = () => {
+        if (isLoading) return;
+        if (!user) {
+            showLogin();
+        } else {
+            setIsUserMenuOpen(!isUserMenuOpen);
+        }
+    };
 
     return (
         <header className="sticky top-0 z-50 bg-white">
@@ -46,39 +69,29 @@ export default function Header() {
 
             {/* Main Header */}
             <div className="border-b border-[#F5F5F5]">
-                <div className="container-main">
+                <div className="w-full mx-auto px-4 md:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         {/* Logo and Navigation */}
                         <div className="flex items-center gap-8">
-                            {/* Logo - Bird/Checkmark Icon */}
+                            {/* Logo */}
                             <Link href="/" className="flex items-center">
-                                <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+                                <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
                                     <path
-                                        d="M4 18L12 26L28 6"
-                                        stroke="#1A1A1A"
-                                        strokeWidth="4"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        fill="none"
-                                    />
-                                    <path
-                                        d="M4 10L10 16"
-                                        stroke="#1A1A1A"
-                                        strokeWidth="4"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        fill="none"
+                                        fillRule="evenodd"
+                                        clipRule="evenodd"
+                                        d="M15 0H0L15 15H0L15 30H30L15 15H30L15 0Z"
+                                        fill="#181818"
                                     />
                                 </svg>
                             </Link>
 
                             {/* Desktop Navigation */}
-                            <nav className="hidden lg:flex items-center gap-6">
+                            <nav className={`hidden lg:flex items-center gap-6 ${spaceGrotesk.className}`}>
                                 {navLinks.map((link) => (
                                     <Link
                                         key={link.name}
                                         href={link.href}
-                                        className="text-sm font-medium text-neutral-600 hover:text-primary transition-colors duration-200"
+                                        className="text-[16px] font-bold text-[#181818] leading-none hover:underline underline-offset-4 transition-all duration-200"
                                     >
                                         {link.name}
                                     </Link>
@@ -91,10 +104,16 @@ export default function Header() {
                             {/* Wishlist Heart Button */}
                             <Link
                                 href="/wishlist"
-                                className="p-2.5 hover:bg-gray-100 rounded-full transition-colors duration-200 cursor-pointer"
+                                className="p-2.5 hover:bg-gray-100 rounded-full transition-colors duration-200 cursor-pointer relative"
                                 aria-label="Wishlist"
                             >
-                                <Heart size={20} className="text-[#1A1A1A]" />
+                                <Image
+                                    src="/images/icons/heart.svg"
+                                    alt="Wishlist"
+                                    width={24}
+                                    height={24}
+                                />
+                                <WishlistBadge />
                             </Link>
 
                             {/* Cart Button */}
@@ -103,26 +122,95 @@ export default function Header() {
                                 className="p-2.5 hover:bg-gray-100 rounded-full transition-colors duration-200 relative cursor-pointer"
                                 aria-label="Shopping cart"
                             >
-                                <ShoppingCart size={20} className="text-[#1A1A1A]" />
-                                {itemCount > 0 && (
-                                    <motion.span
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1 }}
-                                        className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center"
-                                    >
-                                        {itemCount > 9 ? "9+" : itemCount}
-                                    </motion.span>
-                                )}
+                                <Image
+                                    src="/images/icons/cart.svg"
+                                    alt="Cart"
+                                    width={21}
+                                    height={20}
+                                />
+                                <CartBadge />
                             </button>
 
                             {/* User Account Button */}
-                            <Link
-                                href="/account"
-                                className="p-2.5 hover:bg-gray-100 rounded-full transition-colors duration-200 cursor-pointer"
-                                aria-label="Account"
-                            >
-                                <User size={20} className="text-[#1A1A1A]" />
-                            </Link>
+                            <div className="relative">
+                                <button
+                                    onClick={handleAccountClick}
+                                    className="p-2.5 hover:bg-gray-100 rounded-full transition-colors duration-200 cursor-pointer flex items-center gap-2"
+                                    aria-label="Account"
+                                >
+                                    {user?.user_metadata?.avatar_url ? (
+                                        <Image
+                                            src={user.user_metadata.avatar_url}
+                                            alt="Profile"
+                                            width={24}
+                                            height={24}
+                                            className="rounded-full"
+                                        />
+                                    ) : (
+                                        <Image
+                                            src="/images/icons/profile.svg"
+                                            alt="Account"
+                                            width={17}
+                                            height={21}
+                                        />
+                                    )}
+                                </button>
+
+                                {/* User Dropdown Menu */}
+                                <AnimatePresence>
+                                    {isUserMenuOpen && user && (
+                                        <>
+                                            {/* Backdrop */}
+                                            <div
+                                                className="fixed inset-0 z-40"
+                                                onClick={() => setIsUserMenuOpen(false)}
+                                            />
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: -10 }}
+                                                transition={{ duration: 0.15 }}
+                                                className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg border border-neutral-200 py-2 z-50"
+                                            >
+                                                <div className="px-4 py-2 border-b border-neutral-100">
+                                                    <p className="text-sm font-medium text-[#181818] truncate">
+                                                        {user.user_metadata?.full_name || user.email}
+                                                    </p>
+                                                    <p className="text-xs text-neutral-500 truncate">
+                                                        {user.email}
+                                                    </p>
+                                                </div>
+                                                <Link
+                                                    href="/account"
+                                                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
+                                                    onClick={() => setIsUserMenuOpen(false)}
+                                                >
+                                                    <User size={16} />
+                                                    My Account
+                                                </Link>
+                                                <Link
+                                                    href="/account/orders"
+                                                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
+                                                    onClick={() => setIsUserMenuOpen(false)}
+                                                >
+                                                    <Package size={16} />
+                                                    Order History
+                                                </Link>
+                                                <button
+                                                    onClick={() => {
+                                                        signOut();
+                                                        setIsUserMenuOpen(false);
+                                                    }}
+                                                    className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                                >
+                                                    <LogOut size={16} />
+                                                    Sign Out
+                                                </button>
+                                            </motion.div>
+                                        </>
+                                    )}
+                                </AnimatePresence>
+                            </div>
 
                             {/* Mobile Menu Toggle */}
                             <button
@@ -151,12 +239,12 @@ export default function Header() {
                         transition={{ duration: 0.2 }}
                         className="lg:hidden bg-white border-b border-surface-border overflow-hidden"
                     >
-                        <nav className="container-main py-4 space-y-1">
+                        <nav className={`container-main py-4 space-y-1 ${spaceGrotesk.className}`}>
                             {navLinks.map((link) => (
                                 <Link
                                     key={link.name}
                                     href={link.href}
-                                    className="block py-3 text-base font-medium text-neutral-600 hover:text-primary transition-colors duration-200"
+                                    className="block py-3 text-[16px] font-bold text-[#181818] hover:text-neutral-500 transition-colors duration-200"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
                                     {link.name}

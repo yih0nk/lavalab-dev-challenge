@@ -23,12 +23,13 @@
 
 import { useEffect } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Minus, Plus, Trash2 } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 
 export default function CartDrawer() {
+    const router = useRouter();
     const {
         items,
         isCartOpen,
@@ -109,9 +110,9 @@ export default function CartDrawer() {
                                 </div>
                             ) : (
                                 <div className="space-y-6">
-                                    {items.map((item) => (
+                                    {items.map((item, index) => (
                                         <div
-                                            key={`${item.product.id}-${item.selectedColor}`}
+                                            key={`${item.product.id}-${item.selectedColor}-${item.selectedSize || 'no-size'}-${index}`}
                                             className="flex gap-4"
                                         >
                                             {/* Product Image */}
@@ -214,13 +215,15 @@ export default function CartDrawer() {
                                 </div>
 
                                 {/* Checkout Button */}
-                                <Link
-                                    href="/checkout"
-                                    onClick={closeCart}
-                                    className="block w-full py-4 bg-primary text-white text-center font-semibold uppercase tracking-wider hover:bg-primary-light transition-colors"
+                                <button
+                                    onClick={() => {
+                                        closeCart();
+                                        router.push("/checkout");
+                                    }}
+                                    className="w-full py-4 bg-[#1A1A1A] text-white text-center font-semibold uppercase tracking-wider hover:bg-[#2D2D2D] transition-colors rounded-md cursor-pointer"
                                 >
                                     Checkout
-                                </Link>
+                                </button>
 
                                 {/* Continue Shopping */}
                                 <button

@@ -225,10 +225,10 @@ export default function ProductDetailPage() {
                                     <button
                                         key={size}
                                         onClick={() => setSelectedSize(size)}
-                                        className={`w-12 h-12 flex items-center justify-center text-sm font-medium transition-all cursor-pointer ${
+                                        className={`w-12 h-12 flex items-center justify-center text-sm font-medium transition-all duration-200 cursor-pointer ${
                                             selectedSize === size
-                                                ? "bg-primary text-white"
-                                                : "bg-surface-muted text-primary hover:bg-neutral-200"
+                                                ? "bg-[#181818] text-white"
+                                                : "bg-transparent text-[#181818] hover:bg-neutral-100"
                                         }`}
                                     >
                                         {size}

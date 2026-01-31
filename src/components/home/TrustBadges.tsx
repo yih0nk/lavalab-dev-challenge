@@ -12,21 +12,21 @@
  */
 
 import { motion } from "framer-motion";
-import { Truck, Headphones, ShieldCheck } from "lucide-react";
+import Image from "next/image";
 
 const badges = [
     {
-        icon: Truck,
+        icon: "/images/icons/icon-delivery.svg",
         title: "FREE AND FAST DELIVERY",
         description: "Free delivery for all orders over $140",
     },
     {
-        icon: Headphones,
+        icon: "/images/icons/Icon-Customer service.svg",
         title: "24/7 CUSTOMER SERVICE",
         description: "Friendly 24/7 customer support",
     },
     {
-        icon: ShieldCheck,
+        icon: "/images/icons/Icon-secure.svg",
         title: "MONEY BACK GUARANTEE",
         description: "We return money within 30 days",
     },
@@ -34,9 +34,9 @@ const badges = [
 
 export default function TrustBadges() {
     return (
-        <section className="py-16 lg:py-20 bg-surface-muted border-t border-surface-border">
+        <section className="py-12 lg:py-14 mb-16 bg-white">
             <div className="container-main">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {badges.map((badge, index) => (
                         <motion.div
                             key={badge.title}
@@ -44,15 +44,24 @@ export default function TrustBadges() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.5, delay: index * 0.1 }}
-                            className="flex flex-col items-center text-center"
+                            className="flex flex-col items-center text-center gap-6"
                         >
-                            <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mb-4">
-                                <badge.icon size={28} className="text-white" />
+                            <div className="w-20 h-20 bg-neutral-300 rounded-full flex items-center justify-center">
+                                <div className="w-14 h-14 bg-neutral-900 rounded-full flex items-center justify-center">
+                                    <Image
+                                        src={badge.icon}
+                                        alt={badge.title}
+                                        width={28}
+                                        height={28}
+                                    />
+                                </div>
                             </div>
-                            <h3 className="text-sm font-bold tracking-wider uppercase text-primary mb-2">
-                                {badge.title}
-                            </h3>
-                            <p className="text-sm text-neutral-600">{badge.description}</p>
+                            <div>
+                                <h3 className="text-lg font-bold tracking-wider uppercase text-neutral-900 mb-2">
+                                    {badge.title}
+                                </h3>
+                                <p className="text-sm text-neutral-500">{badge.description}</p>
+                            </div>
                         </motion.div>
                     ))}
                 </div>

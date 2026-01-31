@@ -64,3 +64,17 @@ export interface Address {
     zipCode: string;
     country: string;
 }
+
+// Re-export database types for convenience
+export type {
+    Profile,
+    Product as DBProduct,
+    CartItem as DBCartItem,
+    WishlistItem,
+    Wishlist,
+    Order as DBOrder,
+    OrderItem,
+    CartItemWithProduct,
+    WishlistItemWithProduct,
+    OrderWithItems,
+} from "@/lib/supabase/types";
