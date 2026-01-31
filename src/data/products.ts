@@ -24,10 +24,10 @@ const defaultDetails = [
 
 // Image paths
 const images = {
-    white: "/images/products/air-zoom-pegasus-37.png",
-    red: "/images/products/Maroon.png",
-    blue: "/images/products/air-max-90-flyease.png",
-    green: "/images/products/cosmic-unity.png",
+    white: "/images/products/air-zoom-pegasus-37.svg",
+    red: "/images/products/Maroon.svg",
+    blue: "/images/products/air-max-90-flyease.svg",
+    green: "/images/products/cosmic-unity.svg",
 };
 
 export const products: Product[] = [

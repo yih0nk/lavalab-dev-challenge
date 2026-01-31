@@ -111,11 +111,11 @@ export default function ProductDetailPage() {
         <div className="bg-white min-h-screen">
             <div className="container-main py-8 lg:py-12">
                 {/* Main Product Section */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 lg:gap-30">
                     {/* Left: Image Gallery */}
                     <div className="space-y-4">
                         {/* Main Image */}
-                        <div className="aspect-square bg-surface-muted overflow-hidden">
+                        <div className="aspect-square bg-[#F5F5F5] overflow-hidden">
                             <motion.div
                                 key={selectedImage}
                                 initial={{ opacity: 0 }}
@@ -267,13 +267,13 @@ export default function ProductDetailPage() {
                         <div className="flex flex-col sm:flex-row gap-3 pt-4">
                             <button
                                 onClick={handleAddToCart}
-                                className="flex-1 py-4 px-8 bg-black text-white font-semibold uppercase tracking-wider hover:bg-primary-light transition-colors cursor-pointer"
+                                className="flex-1 py-4 px-8 bg-black border-black border-[2] text-white font-semibold uppercase tracking-wider hover:bg-white hover:text-black transition-colors cursor-pointer"
                             >
                                 Add to Cart
                             </button>
                             <button
                                 onClick={handleBuyNow}
-                                className="flex-1 py-4 px-8 bg-accent text-white font-semibold uppercase tracking-wider hover:bg-accent-light transition-colors cursor-pointer"
+                                className="flex-1 py-4 px-8 bg-black text-white font-semibold uppercase tracking-wider hover:bg-white hover:text-black border-black border-[2] transition-colors cursor-pointer"
                             >
                                 Buy Now
                             </button>
