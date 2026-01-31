@@ -23,10 +23,11 @@ import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, Minus, Plus, ChevronDown } from "lucide-react";
+import { Star, Minus, Plus, ChevronDown, CheckCircle, ThumbsUp, Loader2 } from "lucide-react";
 import { getProductById } from "@/data/products";
 import { useCartStore } from "@/store/cartStore";
 import { useRealtimeStock } from "@/hooks/useRealtimeStock";
+import { useProductReviews } from "@/hooks/useProductReviews";
 
 
 export default function ProductDetailPage() {
@@ -44,8 +45,11 @@ export default function ProductDetailPage() {
     // Accordion state
     const [openSection, setOpenSection] = useState<string | null>("details");
 
+    // Reviews pagination
+    const [visibleReviews, setVisibleReviews] = useState(3);
+
     // Cart actions
-    const { addToCart, openCart } = useCartStore();
+    const { addToCart } = useCartStore();
 
     // Handle product not found
     if (!product) {
@@ -71,6 +75,14 @@ export default function ProductDetailPage() {
     const lowStock = isLowStock(product.id);
     const outOfStock = isOutOfStock(product.id);
 
+    // Fetch reviews from database
+    const {
+        reviews,
+        isLoading: reviewsLoading,
+        averageRating,
+        totalReviews,
+        ratingDistribution,
+    } = useProductReviews(product.id);
 
     // Get images array (use main image if no gallery)
     const images = product.images || [product.image];
@@ -90,6 +102,10 @@ export default function ProductDetailPage() {
 
     const toggleSection = (section: string) => {
         setOpenSection(openSection === section ? null : section);
+        // Reset visible reviews when opening reviews section
+        if (section === "reviews" && openSection !== "reviews") {
+            setVisibleReviews(3);
+        }
     };
 
     // Render star rating
@@ -168,9 +184,9 @@ export default function ProductDetailPage() {
 
                         {/* Rating */}
                         <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-0.5">{renderStars(product.rating)}</div>
+                            <div className="flex items-center gap-0.5">{renderStars(totalReviews > 0 ? averageRating : product.rating)}</div>
                             <span className="text-sm text-neutral-500">
-                                ({product.reviewCount} reviews)
+                                ({totalReviews} reviews)
                             </span>
                         </div>
 
@@ -363,7 +379,7 @@ export default function ProductDetailPage() {
                                     className="w-full py-4 flex items-center justify-between text-left cursor-pointer"
                                 >
                                     <span className="font-semibold text-primary">
-                                        Reviews ({product.reviewCount})
+                                        Reviews ({totalReviews})
                                     </span>
                                     <ChevronDown
                                         size={20}
@@ -380,12 +396,128 @@ export default function ProductDetailPage() {
                                             transition={{ duration: 0.2 }}
                                             className="overflow-hidden"
                                         >
-                                            <div className="pb-4 text-neutral-600">
-                                                <p className="italic">
-                                                    Reviews will be loaded from the backend. This section will
-                                                    display customer reviews with ratings, comments, and
-                                                    helpful votes.
-                                                </p>
+                                            <div className="pb-6">
+                                                {reviewsLoading ? (
+                                                    <div className="flex items-center justify-center py-8">
+                                                        <Loader2 className="w-6 h-6 animate-spin text-neutral-400" />
+                                                        <span className="ml-2 text-neutral-500">Loading reviews...</span>
+                                                    </div>
+                                                ) : reviews.length === 0 ? (
+                                                    <p className="text-neutral-500 italic py-4">
+                                                        No reviews yet. Be the first to review this product!
+                                                    </p>
+                                                ) : (
+                                                    <>
+                                                        {/* Rating Summary */}
+                                                        <div className="flex items-start gap-8 mb-6 pb-6 border-b border-surface-border">
+                                                            {/* Average Rating */}
+                                                            <div className="text-center">
+                                                                <div className="text-4xl font-bold text-primary">
+                                                                    {averageRating.toFixed(1)}
+                                                                </div>
+                                                                <div className="flex items-center gap-0.5 mt-1 justify-center">
+                                                                    {renderStars(averageRating)}
+                                                                </div>
+                                                                <div className="text-sm text-neutral-500 mt-1">
+                                                                    {totalReviews} reviews
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Rating Distribution */}
+                                                            <div className="flex-1 space-y-1.5">
+                                                                {[5, 4, 3, 2, 1].map((star) => {
+                                                                    const count = ratingDistribution[star] || 0;
+                                                                    const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
+                                                                    return (
+                                                                        <div key={star} className="flex items-center gap-2">
+                                                                            <span className="text-xs text-neutral-600 w-3">{star}</span>
+                                                                            <Star size={12} className="fill-amber-400 text-amber-400" />
+                                                                            <div className="flex-1 h-2 bg-neutral-100 rounded-full overflow-hidden">
+                                                                                <div
+                                                                                    className="h-full bg-amber-400 rounded-full transition-all"
+                                                                                    style={{ width: `${percentage}%` }}
+                                                                                />
+                                                                            </div>
+                                                                            <span className="text-xs text-neutral-500 w-8">{count}</span>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Individual Reviews */}
+                                                        <div className="space-y-6">
+                                                            {reviews.slice(0, visibleReviews).map((review) => (
+                                                                <div key={review.id} className="pb-6 border-b border-surface-border last:border-0">
+                                                                    {/* Review Header */}
+                                                                    <div className="flex items-start justify-between mb-2">
+                                                                        <div>
+                                                                            <div className="flex items-center gap-2">
+                                                                                <span className="font-medium text-primary">
+                                                                                    {review.author_name}
+                                                                                </span>
+                                                                                {review.verified_purchase && (
+                                                                                    <span className="inline-flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                                                                                        <CheckCircle size={12} />
+                                                                                        Verified Purchase
+                                                                                    </span>
+                                                                                )}
+                                                                            </div>
+                                                                            <div className="flex items-center gap-2 mt-1">
+                                                                                <div className="flex items-center gap-0.5">
+                                                                                    {Array.from({ length: 5 }, (_, i) => (
+                                                                                        <Star
+                                                                                            key={i}
+                                                                                            size={14}
+                                                                                            className={i < review.rating ? "fill-amber-400 text-amber-400" : "text-neutral-300"}
+                                                                                        />
+                                                                                    ))}
+                                                                                </div>
+                                                                                <span className="text-xs text-neutral-500">
+                                                                                    {new Date(review.created_at).toLocaleDateString("en-US", {
+                                                                                        year: "numeric",
+                                                                                        month: "short",
+                                                                                        day: "numeric",
+                                                                                    })}
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {/* Review Content */}
+                                                                    {review.title && (
+                                                                        <h4 className="font-semibold text-primary mb-1">
+                                                                            {review.title}
+                                                                        </h4>
+                                                                    )}
+                                                                    <p className="text-neutral-600 leading-relaxed">
+                                                                        {review.content}
+                                                                    </p>
+
+                                                                    {/* Helpful */}
+                                                                    {review.helpful_count > 0 && (
+                                                                        <div className="flex items-center gap-1 mt-3 text-sm text-neutral-500">
+                                                                            <ThumbsUp size={14} />
+                                                                            <span>{review.helpful_count} people found this helpful</span>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+
+                                                        {/* Show More Button */}
+                                                        {visibleReviews < totalReviews && (
+                                                            <div className="mt-6 text-center">
+                                                                <button
+                                                                    onClick={() => setVisibleReviews((prev) => prev + 3)}
+                                                                    className="px-6 py-2.5 border border-neutral-300 text-primary font-medium rounded-md hover:bg-neutral-50 transition-colors"
+                                                                >
+                                                                    Show More Reviews ({totalReviews - visibleReviews} remaining)
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                )}
                                             </div>
                                         </motion.div>
                                     )}

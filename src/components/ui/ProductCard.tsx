@@ -27,6 +27,7 @@ import { useWishlistStore } from "@/store/wishlistStore";
 import { useAuth } from "@/hooks/useAuth";
 import { useAuthModal } from "@/hooks/useAuthModal";
 import { useRealtimeStock } from "@/hooks/useRealtimeStock";
+import { useReviewCount } from "@/hooks/useReviewCount";
 
 interface ProductCardProps {
     product: Product;
@@ -48,6 +49,9 @@ export default function ProductCard({ product, showStockBadge = true }: ProductC
     const stock = getStock(product.id);
     const lowStock = isLowStock(product.id);
     const outOfStock = isOutOfStock(product.id);
+
+    // Fetch review count from database
+    const { count: reviewCount, averageRating: dbRating } = useReviewCount(product.id);
 
     const [sizeOpen, setSizeOpen] = useState(false);
     const [selectedSize, setSelectedSize] = useState<number | undefined>(undefined);
@@ -244,8 +248,8 @@ export default function ProductCard({ product, showStockBadge = true }: ProductC
 
                     {/* Rating */}
                     <div className="flex items-center gap-1.5">
-                        <div className="flex items-center gap-0.5">{renderStars(product.rating)}</div>
-                        <span className="text-xs text-neutral-500">({product.reviewCount})</span>
+                        <div className="flex items-center gap-0.5">{renderStars(reviewCount > 0 ? dbRating : product.rating)}</div>
+                        <span className="text-xs text-neutral-500">({reviewCount})</span>
                     </div>
                 </div>
             </div>

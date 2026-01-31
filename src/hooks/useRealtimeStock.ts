@@ -27,7 +27,7 @@ export function useRealtimeStock(options: UseRealtimeStockOptions = {}) {
             // First, fetch initial stock data
             if (productIds && productIds.length > 0) {
                 const dbProductIds = productIds.map((id) =>
-                    id.includes("-") ? id : `00000000-0000-0000-0000-00000000000${id}`
+                    id.includes("-") ? id : `00000000-0000-0000-0000-${id.padStart(12, "0")}`
                 );
 
                 const { data: products } = await supabase
