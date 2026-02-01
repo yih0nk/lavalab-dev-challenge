@@ -1,36 +1,114 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SHOPALL
+
+A modern e-commerce platform for athletic footwear built with Next.js 16 and Supabase.
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Styling**: Tailwind CSS
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: Supabase Auth (Google OAuth + Email/Password)
+- **State Management**: Zustand
+- **Animations**: Framer Motion
+- **Email**: Resend
+- **Deployment**: Vercel
+
+## Features
+
+- **Product Catalog**: Browse new arrivals and trending products with real-time stock updates
+- **Shopping Cart**: Persistent cart with size/color selection, synced across devices
+- **Wishlist**: Save favorite items, share wishlists via unique links
+- **User Authentication**: Sign in with Google or email/password
+- **Order Management**: Checkout flow with order confirmation emails
+- **Reviews**: Product reviews fetched from database with ratings
+- **Responsive Design**: Mobile-first design matching Figma specifications
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js 18+
+- npm or yarn
+- Supabase account
+- Resend account (for emails)
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd lavalab-dev-challenge
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Set up environment variables:
+   ```bash
+   cp .env.example .env.local
+   ```
+
+4. Configure your `.env.local`:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+   RESEND_API_KEY=your-resend-api-key
+   ```
+
+5. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+6. Open [http://localhost:3000](http://localhost:3000)
+
+## Database Setup
+
+Run the SQL scripts in the Supabase SQL Editor in order:
+
+1. `supabase/schema.sql` - Create tables and RLS policies
+2. `supabase/seed-products.sql` - Seed product data
+3. `supabase/fix-product-images.sql` - Update product images
+4. `supabase/reviews-schema.sql` - Create reviews table with sample data
+
+## Project Structure
+
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── api/               # API routes
+│   ├── auth/              # Auth callbacks
+│   ├── product/[id]/      # Product detail page
+│   ├── wishlist/          # Wishlist pages
+│   ├── account/           # Account pages
+│   └── checkout/          # Checkout page
+├── components/
+│   ├── auth/              # Auth modal and forms
+│   ├── cart/              # Cart drawer
+│   ├── home/              # Homepage sections
+│   ├── layout/            # Header, Footer
+│   └── ui/                # Reusable components
+├── hooks/                 # Custom React hooks
+├── lib/                   # Utilities and configs
+│   └── supabase/          # Supabase client setup
+├── store/                 # Zustand stores
+├── data/                  # Static product data
+└── types/                 # TypeScript types
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Deployment
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The project is configured for Vercel deployment:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Push to your GitHub repository
+2. Connect repository to Vercel
+3. Add environment variables in Vercel dashboard
+4. Deploy
 
-## Learn More
+For Google OAuth in production, update the authorized redirect URI in Google Cloud Console to your production domain.
 
-To learn more about Next.js, take a look at the following resources:
+## License
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
