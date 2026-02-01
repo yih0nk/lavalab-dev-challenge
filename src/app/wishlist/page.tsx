@@ -9,6 +9,8 @@ import { useCartStore } from "@/store/cartStore";
 import { useAuth } from "@/hooks/useAuth";
 import { useAuthModal } from "@/hooks/useAuthModal";
 import { toast } from "sonner";
+import SelectSizeModal from "@/components/ui/SelectSizeModal";
+import { Product } from "@/types";
 
 export default function WishlistPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -25,6 +27,11 @@ export default function WishlistPage() {
   const { addToCart } = useCartStore();
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // Size selection modal state
+  const [sizeModalOpen, setSizeModalOpen] = useState(false);
+  const [selectedSize, setSelectedSize] = useState<number | undefined>(undefined);
+  const [itemToAdd, setItemToAdd] = useState<Product | null>(null);
 
   useEffect(() => {
     if (user && !authLoading) {
@@ -49,7 +56,27 @@ export default function WishlistPage() {
   };
 
   const handleAddToCart = (item: (typeof items)[0]) => {
-    addToCart(item, item.colors[0]);
+    const sizes = item.sizes ?? [];
+    const requiresSize = sizes.length > 0;
+
+    if (requiresSize) {
+      // Open size selection modal
+      setItemToAdd(item as Product);
+      setSelectedSize(undefined);
+      setSizeModalOpen(true);
+    } else {
+      // Add directly without size
+      addToCart(item as Product, item.colors[0], undefined, 1);
+    }
+  };
+
+  const handleConfirmAddToCart = () => {
+    if (itemToAdd && selectedSize != null) {
+      addToCart(itemToAdd, itemToAdd.colors[0], selectedSize, 1);
+      setSizeModalOpen(false);
+      setItemToAdd(null);
+      setSelectedSize(undefined);
+    }
   };
 
   if (authLoading || isLoading) {
@@ -223,6 +250,21 @@ export default function WishlistPage() {
             ))}
           </div>
         )}
+
+        {/* Size Selection Modal */}
+        <SelectSizeModal
+          open={sizeModalOpen}
+          onClose={() => {
+            setSizeModalOpen(false);
+            setItemToAdd(null);
+            setSelectedSize(undefined);
+          }}
+          sizes={itemToAdd?.sizes ?? []}
+          selectedSize={selectedSize}
+          onSelect={(size) => setSelectedSize(size)}
+          onConfirm={handleConfirmAddToCart}
+          title={itemToAdd ? `Select size for ${itemToAdd.name}` : "Select a size"}
+        />
       </div>
     </div>
   );
