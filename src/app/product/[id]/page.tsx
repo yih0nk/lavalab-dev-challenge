@@ -39,7 +39,7 @@ export default function ProductDetailPage() {
     // State for selections
     const [selectedImage, setSelectedImage] = useState(0);
     const [selectedColor, setSelectedColor] = useState(product?.colors[0] || "");
-    const [selectedSize, setSelectedSize] = useState<number | null>(null);
+    const [selectedSize, setSelectedSize] = useState<number | undefined>(undefined);
     const [quantity, setQuantity] = useState(1);
 
     // Accordion state

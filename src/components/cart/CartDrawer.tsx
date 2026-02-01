@@ -110,9 +110,9 @@ export default function CartDrawer() {
                                 </div>
                             ) : (
                                 <div className="space-y-6">
-                                    {items.map((item, index) => (
+                                    {items.map((item) => (
                                         <div
-                                            key={`${item.product.id}-${item.selectedColor}-${item.selectedSize || 'no-size'}-${index}`}
+                                            key={`${item.product.id}-${item.selectedColor}-${item.selectedSize ?? 'no-size'}`}
                                             className="flex gap-4"
                                         >
                                             {/* Product Image */}
