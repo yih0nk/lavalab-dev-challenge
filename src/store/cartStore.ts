@@ -34,8 +34,8 @@ interface CartStore {
     isCartOpen: boolean;
     isSyncing: boolean;
     addToCart: (product: Product, color: string, size?: number, quantity?: number) => void;
-    removeFromCart: (productId: string, color: string) => void;
-    updateQuantity: (productId: string, color: string, quantity: number) => void;
+    removeFromCart: (productId: string, color: string, size?: number) => void;
+    updateQuantity: (productId: string, color: string, size: number | undefined, quantity: number) => void;
     clearCart: () => void;
     toggleCart: () => void;
     openCart: () => void;
@@ -145,13 +145,17 @@ export const useCartStore = create<CartStore>()(
             },
 
 
-            removeFromCart: (productId, color) => {
+            removeFromCart: (productId, color, size) => {
                 // Update local state IMMEDIATELY
                 const currentItems = get().items;
                 const normalizedId = normalizeProductId(productId);
                 set({
                     items: currentItems.filter(
-                        (item) => !(normalizeProductId(item.product.id) === normalizedId && item.selectedColor === color)
+                        (item) => !(
+                            normalizeProductId(item.product.id) === normalizedId &&
+                            item.selectedColor === color &&
+                            item.selectedSize === size
+                        )
                     ),
                 });
 
@@ -162,12 +166,20 @@ export const useCartStore = create<CartStore>()(
                         const { data: { user } } = await supabase.auth.getUser();
 
                         if (user) {
-                            await supabase
+                            let query = supabase
                                 .from("cart_items")
                                 .delete()
                                 .eq("user_id", user.id)
                                 .eq("product_id", toDbProductId(productId))
                                 .eq("selected_color", color);
+
+                            if (size !== undefined) {
+                                query = query.eq("selected_size", size);
+                            } else {
+                                query = query.is("selected_size", null);
+                            }
+
+                            await query;
                         }
                     } catch (error) {
                         console.error("Error removing cart item:", error);
@@ -175,9 +187,9 @@ export const useCartStore = create<CartStore>()(
                 })();
             },
 
-            updateQuantity: (productId, color, quantity) => {
+            updateQuantity: (productId, color, size, quantity) => {
                 if (quantity <= 0) {
-                    get().removeFromCart(productId, color);
+                    get().removeFromCart(productId, color, size);
                     return;
                 }
 
@@ -186,7 +198,9 @@ export const useCartStore = create<CartStore>()(
                 const normalizedId = normalizeProductId(productId);
                 set({
                     items: currentItems.map((item) =>
-                        normalizeProductId(item.product.id) === normalizedId && item.selectedColor === color
+                        normalizeProductId(item.product.id) === normalizedId &&
+                        item.selectedColor === color &&
+                        item.selectedSize === size
                             ? { ...item, quantity }
                             : item
                     ),
@@ -199,12 +213,20 @@ export const useCartStore = create<CartStore>()(
                         const { data: { user } } = await supabase.auth.getUser();
 
                         if (user) {
-                            await supabase
+                            let query = supabase
                                 .from("cart_items")
                                 .update({ quantity } as never)
                                 .eq("user_id", user.id)
                                 .eq("product_id", toDbProductId(productId))
                                 .eq("selected_color", color);
+
+                            if (size !== undefined) {
+                                query = query.eq("selected_size", size);
+                            } else {
+                                query = query.is("selected_size", null);
+                            }
+
+                            await query;
                         }
                     } catch (error) {
                         console.error("Error updating cart quantity:", error);

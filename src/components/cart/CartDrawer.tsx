@@ -159,6 +159,7 @@ export default function CartDrawer() {
                                                                 updateQuantity(
                                                                     item.product.id,
                                                                     item.selectedColor,
+                                                                    item.selectedSize,
                                                                     item.quantity - 1
                                                                 )
                                                             }
@@ -175,6 +176,7 @@ export default function CartDrawer() {
                                                                 updateQuantity(
                                                                     item.product.id,
                                                                     item.selectedColor,
+                                                                    item.selectedSize,
                                                                     item.quantity + 1
                                                                 )
                                                             }
@@ -188,7 +190,7 @@ export default function CartDrawer() {
                                                     {/* Remove Button */}
                                                     <button
                                                         onClick={() =>
-                                                            removeFromCart(item.product.id, item.selectedColor)
+                                                            removeFromCart(item.product.id, item.selectedColor, item.selectedSize)
                                                         }
                                                         className="p-2 text-neutral-400 hover:text-red-500 transition-colors cursor-pointer"
                                                         aria-label="Remove item"
