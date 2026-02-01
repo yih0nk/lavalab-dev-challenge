@@ -97,8 +97,11 @@ export default function ProductDetailPage() {
         addToCart(product, selectedColor, selectedSize, quantity);
     };
 
-    const incrementQuantity = () => setQuantity((q) => q + 1);
+    // Max quantity is limited by stock
+    const maxQuantity = stock ?? 99;
+    const incrementQuantity = () => setQuantity((q) => (q < maxQuantity ? q + 1 : q));
     const decrementQuantity = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
+    const isMaxQuantity = quantity >= maxQuantity;
 
     const toggleSection = (section: string) => {
         setOpenSection(openSection === section ? null : section);
@@ -273,7 +276,12 @@ export default function ProductDetailPage() {
                             <div className="flex items-center gap-1 w-fit">
                                 <button
                                     onClick={decrementQuantity}
-                                    className="w-10 h-10 flex items-center justify-center bg-surface-muted hover:bg-neutral-200 transition-colors cursor-pointer"
+                                    disabled={quantity <= 1}
+                                    className={`w-10 h-10 flex items-center justify-center bg-surface-muted transition-colors ${
+                                        quantity <= 1
+                                            ? "opacity-50 cursor-not-allowed"
+                                            : "hover:bg-neutral-200 cursor-pointer"
+                                    }`}
                                     aria-label="Decrease quantity"
                                 >
                                     <Minus size={16} />
@@ -283,12 +291,20 @@ export default function ProductDetailPage() {
                                 </span>
                                 <button
                                     onClick={incrementQuantity}
-                                    className="w-10 h-10 flex items-center justify-center bg-surface-muted hover:bg-neutral-200 transition-colors cursor-pointer"
+                                    disabled={isMaxQuantity}
+                                    className={`w-10 h-10 flex items-center justify-center bg-surface-muted transition-colors ${
+                                        isMaxQuantity
+                                            ? "opacity-50 cursor-not-allowed"
+                                            : "hover:bg-neutral-200 cursor-pointer"
+                                    }`}
                                     aria-label="Increase quantity"
                                 >
                                     <Plus size={16} />
                                 </button>
                             </div>
+                            {isMaxQuantity && stock !== null && (
+                                <p className="text-sm text-amber-600">Maximum available quantity selected</p>
+                            )}
                         </div>
 
                         {/* Action Buttons */}
