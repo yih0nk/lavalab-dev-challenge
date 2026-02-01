@@ -248,9 +248,20 @@ export const products: Product[] = [
     },
 ];
 
-// Helper function to get product by ID
+// Helper to normalize product ID (extract numeric part from UUID)
+function normalizeProductId(id: string): string {
+    if (id.includes("-")) {
+        // Extract last segment and remove leading zeros
+        const lastSegment = id.split("-").pop() || "";
+        return String(parseInt(lastSegment, 10));
+    }
+    return id;
+}
+
+// Helper function to get product by ID (handles both simple IDs and UUIDs)
 export function getProductById(id: string): Product | undefined {
-    return products.find((product) => product.id === id);
+    const normalizedId = normalizeProductId(id);
+    return products.find((product) => normalizeProductId(product.id) === normalizedId);
 }
 
 // Helper function to get products by category
